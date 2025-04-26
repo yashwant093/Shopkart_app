@@ -8,5 +8,6 @@ export type RootTabParamList = {
     Notifications: undefined;
     QRScanner: undefined;
     OTP: undefined;
+    CreateShop: undefined;
   };
   

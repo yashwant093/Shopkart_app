@@ -5,7 +5,7 @@ import CustomHeader from '../../../shared/components/CustomHeader';
 import theme from '../../../shared/theme';
 import CartScreen from './CartScreen';
 import ProfileScreen from './ProfileScreen';
-import DashboardScreen from '../../auth/screens/DashboardScreen';
+import DashboardScreen from '../../shop/screens/DashboardScreen';
 import { DrawerActions } from '@react-navigation/native';
 
 const Tab = createBottomTabNavigator();

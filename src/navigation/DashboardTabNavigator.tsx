@@ -10,7 +10,7 @@ import NotificationScreen from '../modules/dashboard/screens/NotificationScreen'
 
 import CustomHeader from '../shared/components/CustomHeader';
 import theme from '../shared/theme';
-import DashboardScreen from '../modules/auth/screens/DashboardScreen';
+import DashboardScreen from '../modules/shop/screens/DashboardScreen';
 
 // ✅ Define your tab screen types
 export type DashboardTabParamList = {

@@ -14,6 +14,7 @@ const colors = {
   statusBar: '#111827', // Dark color for status bar background
   textOnPrimary: '#FFFFFF', // Text color for primary buttons, headers, etc.
   textMuted: '#9CA3AF', // Muted text for labels and less emphasized text
+  disabled: '#D3D3D3',  // Disabled color added
 };
 
 export default colors;

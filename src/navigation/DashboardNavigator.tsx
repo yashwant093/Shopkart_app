@@ -7,13 +7,14 @@ import SearchScreen from '../modules/dashboard/screens/SearchScreen';
 import NotificationScreen from '../modules/dashboard/screens/NotificationScreen';
 import CustomHeader from '../shared/components/CustomHeader';
 import theme from '../shared/theme';
-import DashboardScreen from '../modules/auth/screens/DashboardScreen';
+import DashboardScreen from '../modules/shop/screens/DashboardScreen';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import CustomDrawerContent from '../shared/components/CustomDrawerContent';
+import CreateShop from '../modules/shop/components/CreateShop/CreateShop';
 
 export type DashboardTabParamList = {
   Dashboard: undefined;
-  Cart: undefined;
+  CreateShop: undefined;
   Profile: undefined;
   Search: undefined;
   Notifications: undefined;
@@ -74,8 +75,8 @@ const DashboardNavigator = () => (
           case 'Dashboard':
             iconName = focused ? 'home' : 'home-outline';
             break;
-          case 'Cart':
-            iconName = focused ? 'cart' : 'cart-outline';
+          case 'CreateShop':
+            iconName = focused ? 'store' : 'store-outline'; 
             break;
           case 'Search':
             // Set Search icon
@@ -110,18 +111,18 @@ const DashboardNavigator = () => (
         tabBarItemStyle: { width: 100 }, // Set width for MyProfile tab
       }}
     />
+    {/* <Tab.Screen
+      name="CreateShop"
+      component={CreateShop}
+      options={{
+        tabBarItemStyle: { width: 100 }, // Set width for MyCart tab
+      }}
+    /> */}
     <Tab.Screen
       name="Search"
       component={SearchScreen}
       options={{
         tabBarItemStyle: { width: 100 }, // Set width for MyProfile tab
-      }}
-    />
-    <Tab.Screen
-      name="Cart"
-      component={CartScreen}
-      options={{
-        tabBarItemStyle: { width: 100 }, // Set width for MyCart tab
       }}
     />
     <Tab.Screen
