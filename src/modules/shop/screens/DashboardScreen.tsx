@@ -72,8 +72,8 @@ const DashboardScreen = ({ navigation }: any) => {
             renderItem={({ item }) => {
               const isSelected = selectedItem?.id === item.id;
               return (
-                <TouchableOpacity onPress={() => handleItemClick(item)} style={styles.itemContainer}>
-                  <Image source={item.image} style={[styles.itemImage, isSelected && styles.selectedItemBorder]} resizeMode='stretch' />
+                <TouchableOpacity onPress={() => handleItemClick(item)} style={[styles.itemContainer,isSelected && styles.selectedItemBorder]}>
+                  <Image source={item.image} style={[styles.itemImage]} resizeMode='stretch' />
                   <Text style={styles.itemLabel}>{item.label}</Text>
                 </TouchableOpacity>
               );
@@ -251,20 +251,17 @@ const styles = StyleSheet.create({
   itemContainer: {
     alignItems: 'center',
     marginRight: theme.spacing.sm,
-    borderWidth: 2,
-    borderColor: theme.colors.primary,
-    borderRadius: theme.spacing.xs,
+    borderWidth: 0.5,
+    borderColor: theme.colors.text,
     width: 100, // Fixed width for consistency
   },
   itemImage: {
     width: '100%', // Fixed width for image
     height: 50, // Fixed height for image
-    borderRadius: theme.spacing.xs,
   },
   selectedItemBorder: {
-    // borderWidth: 2,
-    // borderColor: theme.colors.primary,
-    // borderRadius: theme.spacing.xs,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
   },
   itemLabel: {
     marginTop: theme.spacing.xs,
@@ -278,11 +275,10 @@ const styles = StyleSheet.create({
   },
   selectedItemContainer: {
     backgroundColor: theme.colors.background,
-    borderRadius: theme.spacing.xs,
     padding: theme.spacing.md,
     marginTop: theme.spacing.sm,
     borderWidth: 1,
-    borderColor: theme.colors.primary,
+    borderColor: theme.colors.text,
   },
   selectedItemText: {
     fontSize: theme.fonts.size.md,
