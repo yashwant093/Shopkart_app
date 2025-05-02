@@ -11,23 +11,45 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import theme from '../../../shared/theme';
+import { useDispatch } from 'react-redux';
+import { useLoginMutation } from '../../../services/apiServices';
+import { setCredentials } from '../store/authSlice';
+
+const USE_STATIC_LOGIN = true; // Set to true to enable static login
+
+const STATIC_EMAIL = 'admin@gmail.com';
+const STATIC_PASSWORD = '123456';
 
 const LoginScreen = ({ navigation, setIsAuthenticated }: any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);  // State for managing loader visibility
+  const [login, { isLoading }] = useLoginMutation();
+  const dispatch = useDispatch();
 
-  const handleLogin = () => {
-    if (email && password) {
-      setLoading(true);  // Show loader
-      setTimeout(() => {
-        // Simulate a login API call or logic
-        setLoading(false); // Hide loader after login attempt
-        setIsAuthenticated(true); // Set the user as authenticated (for now)
-        Alert.alert('Success', 'Login Successful!');
-      }, 2000);  // Simulating a 2-second delay (replace with actual API call)
-    } else {
+  const handleLogin = async () => {
+    if (!email || !password) {
       Alert.alert('Error', 'Please enter your credentials');
+      return;
+    }
+
+    if (USE_STATIC_LOGIN) {
+      if (email === STATIC_EMAIL && password === STATIC_PASSWORD) {
+        setIsAuthenticated(true);
+        Alert.alert('Success', 'Static Login Successful');
+      } else {
+        Alert.alert('Login Failed', 'Invalid static credentials');
+      }
+    } else {
+      try {
+        const res = await login({ email, password }).unwrap();
+        console.log({ email, password });
+        console.log('Login response:', res);
+        dispatch(setCredentials(res.access_token));
+        setIsAuthenticated(true);
+        Alert.alert('Success', 'Login Successful');
+      } catch (error) {
+        Alert.alert('Login Failed', 'Invalid credentials');
+      }
     }
   };
 
@@ -37,10 +59,8 @@ const LoginScreen = ({ navigation, setIsAuthenticated }: any) => {
       style={styles.container}
     >
       <View style={styles.formContainer}>
-        {/* Login Text */}
         <Text style={styles.loginText}>Log In</Text>
 
-        {/* Email Label and Input */}
         <View style={styles.inputWrapper}>
           <Text style={styles.label}>Email</Text>
           <TextInput
@@ -54,7 +74,6 @@ const LoginScreen = ({ navigation, setIsAuthenticated }: any) => {
           />
         </View>
 
-        {/* Password Label and Input */}
         <View style={styles.inputWrapper}>
           <Text style={styles.label}>Password</Text>
           <TextInput
@@ -67,15 +86,14 @@ const LoginScreen = ({ navigation, setIsAuthenticated }: any) => {
           />
         </View>
 
-        {/* Button with Loader inside */}
         <View style={styles.buttonWrapper}>
           <TouchableOpacity
             style={styles.loginButton}
             onPress={handleLogin}
-            disabled={loading}  // Disable button while loading
+            disabled={isLoading}
           >
-            {loading ? (
-              <ActivityIndicator size="small" color="#fff" />  // Show loader inside the button
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#fff" />
             ) : (
               <Text style={styles.buttonText}>Log In</Text>
             )}
@@ -83,18 +101,15 @@ const LoginScreen = ({ navigation, setIsAuthenticated }: any) => {
         </View>
       </View>
 
-      {/* SignUp Link */}
       <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
         <Text style={styles.signupText}>Don't have an account? Sign Up</Text>
       </TouchableOpacity>
 
-      // After Password TextInput and before the login button
       <View style={styles.forgotPasswordWrapper}>
-        <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-        </TouchableOpacity>
-      </View>
-
+          <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+          </TouchableOpacity>
+        </View>
 
     </KeyboardAvoidingView>
   );
@@ -103,14 +118,14 @@ const LoginScreen = ({ navigation, setIsAuthenticated }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background, // Use the background color from the theme
+    backgroundColor: theme.colors.background,
     padding: theme.spacing.lg,
     justifyContent: 'center',
   },
   formContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',  // Set background opacity here (rgba format)
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     padding: theme.spacing.lg,
-    borderRadius: 8,  // Optional: to round the corners of the background box
+    borderRadius: 8,
     marginBottom: theme.spacing.md,
   },
   loginText: {
@@ -168,7 +183,6 @@ const styles = StyleSheet.create({
     fontSize: theme.fonts.size.sm,
     fontFamily: theme.fonts.medium,
   },
-  
 });
 
 export default LoginScreen;

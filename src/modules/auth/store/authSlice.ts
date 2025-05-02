@@ -1,33 +1,30 @@
-// src/modules/auth/store/authSlice.ts
+// features/auth/authSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface AuthState {
-  accessToken: string | null;
-  user: any | null;
+  token: string | null;
+  isAuthenticated: boolean;
 }
 
 const initialState: AuthState = {
-  accessToken: null,
-  user: null,
+  token: null,
+  isAuthenticated: false,
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    loginSuccess(state, action: PayloadAction<{ token: string, user: any }>) {
-      state.accessToken = action.payload.token;
-      state.user = action.payload.user;
+    setCredentials: (state, action: PayloadAction<string>) => {
+      state.token = action.payload;
+      state.isAuthenticated = true;
     },
-    updateToken(state, action: PayloadAction<string>) {
-      state.accessToken = action.payload;
-    },
-    logout(state) {
-      state.accessToken = null;
-      state.user = null;
+    logout: (state) => {
+      state.token = null;
+      state.isAuthenticated = false;
     },
   },
 });
 
-export const { loginSuccess, updateToken, logout } = authSlice.actions;
+export const { setCredentials, logout } = authSlice.actions;
 export default authSlice.reducer;

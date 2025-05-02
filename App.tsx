@@ -69,14 +69,16 @@ import { NavigationContainer } from '@react-navigation/native';
 import { Provider as PaperProvider } from 'react-native-paper';
 import AppNavigator from './src/navigation/AppNavigator';
 import { Provider } from 'react-redux';
+import { store } from './src/modules/auth/store/store';
 
 const App = () => (
+  <Provider store={store}>
     <PaperProvider>
       <NavigationContainer>
         <AppNavigator />
       </NavigationContainer>
     </PaperProvider>
-
+    </Provider>
 );
 
 export default App;
