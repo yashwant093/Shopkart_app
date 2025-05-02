@@ -57,6 +57,8 @@ import AuthNavigator from './AuthNavigator';
 import DrawerNavigator from './DashboardNavigator';
 import CreateShop from '../modules/shop/components/CreateShop/CreateShop'; // Import CreateShop
 import CustomHeader from '../shared/components/CustomHeader';
+import ShoppingDashboardCategory from '../modules/shop/screens/ShopDashboardCategory/ShoppingDashboardCategory';
+import ShoppingProductDetailsScreen from '../modules/shop/screens/ShoppingProductDetails/ShoppingProductDetailsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -101,6 +103,39 @@ const AppNavigator = () => {
           ),
         }}
       />
+
+      {/* Add CreateShop with a custom header */}
+      <Stack.Screen
+        name="Category"
+        component={ShoppingDashboardCategory}
+        options={{
+          header: ({ navigation }) => (
+            <CustomHeader
+              title="Category"
+              navigation={navigation}
+              showDrawerIcon={false}
+              showIcons={false}
+            />
+          ),
+        }}
+      />
+
+      {/* Add CreateShop with a custom header */}
+      <Stack.Screen
+        name="ShoppingProductDetails"
+        component={ShoppingProductDetailsScreen}
+        options={{
+          header: ({ navigation }) => (
+            <CustomHeader
+              title="Product Details"
+              navigation={navigation}
+              showDrawerIcon={false}
+              showIcons={false}
+            />
+          ),
+        }}
+      />
+
     </Stack.Navigator>
   );
 };

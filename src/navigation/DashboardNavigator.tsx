@@ -14,7 +14,7 @@ import CreateShop from '../modules/shop/components/CreateShop/CreateShop';
 
 export type DashboardTabParamList = {
   Dashboard: undefined;
-  CreateShop: undefined;
+  wishlist: undefined;
   Profile: undefined;
   Search: undefined;
   Notifications: undefined;
@@ -39,7 +39,7 @@ const DrawerNavigator = () => (
     }}
   >
     <Drawer.Screen
-      name="Dashboard"
+      name="Shopkart"
       component={DashboardScreen}
       options={{
         headerShown: true, // Show header for the Dashboard screen
@@ -75,8 +75,8 @@ const DashboardNavigator = () => (
           case 'Dashboard':
             iconName = focused ? 'home' : 'home-outline';
             break;
-          case 'CreateShop':
-            iconName = focused ? 'store' : 'store-outline'; 
+          case 'wishlist':
+            iconName = focused ? 'heart' : 'heart-outline';
             break;
           case 'Search':
             // Set Search icon
@@ -111,18 +111,19 @@ const DashboardNavigator = () => (
         tabBarItemStyle: { width: 100 }, // Set width for MyProfile tab
       }}
     />
-    {/* <Tab.Screen
-      name="CreateShop"
-      component={CreateShop}
-      options={{
-        tabBarItemStyle: { width: 100 }, // Set width for MyCart tab
-      }}
-    /> */}
+
     <Tab.Screen
       name="Search"
       component={SearchScreen}
       options={{
         tabBarItemStyle: { width: 100 }, // Set width for MyProfile tab
+      }}
+    />
+    <Tab.Screen
+      name="wishlist"
+      component={CreateShop}
+      options={{
+        tabBarItemStyle: { width: 100 }, // Set width for MyCart tab
       }}
     />
     <Tab.Screen

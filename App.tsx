@@ -68,13 +68,15 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { Provider as PaperProvider } from 'react-native-paper';
 import AppNavigator from './src/navigation/AppNavigator';
+import { Provider } from 'react-redux';
 
 const App = () => (
-  <PaperProvider>
-    <NavigationContainer>
-      <AppNavigator />
-    </NavigationContainer>
-  </PaperProvider>
+    <PaperProvider>
+      <NavigationContainer>
+        <AppNavigator />
+      </NavigationContainer>
+    </PaperProvider>
+
 );
 
 export default App;
