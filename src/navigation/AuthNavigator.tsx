@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../modules/auth/screens/LoginScreen';
 import SignupScreen from '../modules/auth/screens/SignupScreen';
 import OTPScreen from '../modules/auth/screens/OTPScreen';
+import ForgotPassword from '../modules/auth/screens/ForgotPassword';
 
 const Stack = createNativeStackNavigator();
 
@@ -13,6 +14,7 @@ const AuthNavigator = ({ setIsAuthenticated }: any) => (
     </Stack.Screen>
     <Stack.Screen name="Signup" component={SignupScreen} />
     <Stack.Screen name="OTP" component={OTPScreen} />
+    <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
   </Stack.Navigator>
 );
 

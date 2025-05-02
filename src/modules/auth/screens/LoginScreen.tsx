@@ -87,6 +87,15 @@ const LoginScreen = ({ navigation, setIsAuthenticated }: any) => {
       <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
         <Text style={styles.signupText}>Don't have an account? Sign Up</Text>
       </TouchableOpacity>
+
+      // After Password TextInput and before the login button
+      <View style={styles.forgotPasswordWrapper}>
+        <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+        </TouchableOpacity>
+      </View>
+
+
     </KeyboardAvoidingView>
   );
 };
@@ -150,6 +159,16 @@ const styles = StyleSheet.create({
     fontSize: theme.fonts.size.sm,
     marginTop: theme.spacing.sm,
   },
+  forgotPasswordWrapper: {
+    alignItems: 'center',
+    marginVertical: theme.spacing.lg,
+  },
+  forgotPasswordText: {
+    color: theme.colors.primary,
+    fontSize: theme.fonts.size.sm,
+    fontFamily: theme.fonts.medium,
+  },
+  
 });
 
 export default LoginScreen;

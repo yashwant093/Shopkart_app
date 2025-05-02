@@ -33,7 +33,7 @@ const OTPScreen = ({ navigation }: any) => {
       setTimeout(() => {
         setIsVerifying(false); // Stop loader
         Alert.alert('Success', 'OTP Verified!');
-        navigation.navigate('Login'); // Or next step in auth flow
+        navigation.navigate('ForgotPassword'); // Or next step in auth flow
       }, 2000); // Simulate network delay
     } else {
       Alert.alert('Error', 'Please enter a valid 4-digit OTP');

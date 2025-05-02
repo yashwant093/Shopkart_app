@@ -11,5 +11,6 @@ export type RootTabParamList = {
     CreateShop: undefined;
     ShoppingDashboardCategory: undefined;
     ShoppingProductDetails: undefined;
+    ForgotPassword: undefined;
   };
   
