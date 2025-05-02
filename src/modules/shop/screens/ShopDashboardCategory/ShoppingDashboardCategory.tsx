@@ -95,8 +95,6 @@ const ShoppingDashboardCategory = () => {
     });
   };
   
-  
-  
   return (
     <View style={styles.fullContainer}>
       <FlatList
@@ -128,7 +126,7 @@ const ShoppingDashboardCategory = () => {
         numColumns={2}
         renderItem={({ item }) => {
           const discountPrice = (item.price - (item.price * item.discount) / 100).toFixed(0);
-          const isWishlisted = wishlist.includes(item.id);
+          // const isWishlisted = wishlist.includes(item.id);
 
           return (
             <TouchableOpacity
@@ -137,11 +135,11 @@ const ShoppingDashboardCategory = () => {
             >
               <View style={styles.imageContainer}>
                 <Image source={item.image} style={styles.productImage} resizeMode="stretch" />
-                <TouchableOpacity style={styles.shareIcon} onPress={() => handleShare(item.name)}>
+                {/* <TouchableOpacity style={styles.shareIcon} onPress={() => handleShare(item.name)}>
                   <MaterialIcons name="share" size={20} color={theme.colors.text} />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   style={styles.wishlistIcon}
                   onPress={() => handleWishlistToggle(item.id)}
                 >
@@ -150,7 +148,7 @@ const ShoppingDashboardCategory = () => {
                     size={20}
                     color={isWishlisted ? theme.colors.primary : theme.colors.text}
                   />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
               <Text style={styles.productName}>{item.name}</Text>
               <View style={styles.priceContainer}>

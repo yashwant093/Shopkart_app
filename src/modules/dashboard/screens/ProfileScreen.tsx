@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,57 +7,106 @@ import {
   TextInput,
   Alert,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { RadioButton } from 'react-native-paper'; // <-- Add this
-import theme from '../../../shared/theme';
+import { RadioButton } from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { launchImageLibrary } from 'react-native-image-picker';
+import theme from '../../../shared/theme'; // adjust if needed
 
 const ProfileScreen: React.FC = () => {
-  const [name, setName] = useState('John');
-  const [lastname, setLastname] = useState('Doe');
+  const [fullName, setFullName] = useState('John Doe');
+  const [mobileNumber, setMobileNumber] = useState('9876543210');
   const [email, setEmail] = useState('johndoe@example.com');
   const [address, setAddress] = useState('123 Main St, City');
   const [gender, setGender] = useState('Male');
   const [isEditing, setIsEditing] = useState(false);
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
 
-  const handleEditProfile = () => {
+  useEffect(() => {
+    const loadProfile = async () => {
+      const data = await AsyncStorage.getItem('userProfile');
+      if (data) {
+        const profile = JSON.parse(data);
+        setFullName(profile.fullName || '');
+        setMobileNumber(profile.mobileNumber || '');
+        setEmail(profile.email || '');
+        setAddress(profile.address || '');
+        setGender(profile.gender || 'Male');
+        setAvatarUri(profile.avatarUri || null);
+      }
+    };
+    loadProfile();
+  }, []);
+
+  const handleEditProfile = async () => {
     if (isEditing) {
-      Alert.alert('Profile Saved', 'Your profile has been updated!');
+      try {
+        await AsyncStorage.setItem(
+          'userProfile',
+          JSON.stringify({
+            fullName,
+            mobileNumber,
+            email,
+            address,
+            gender,
+            avatarUri,
+          })
+        );
+        Alert.alert('Profile Saved', 'Your profile has been updated!');
+      } catch (error) {
+        Alert.alert('Error', 'Failed to save profile.');
+      }
     }
     setIsEditing(!isEditing);
   };
 
   const handleAvatarClick = () => {
-    Alert.alert('Upload avatar functionality coming soon!');
+    if (!isEditing) return;
+    launchImageLibrary({ mediaType: 'photo' }, (response) => {
+      if (response.didCancel) return;
+      if (response.assets && response.assets.length > 0) {
+        const uri = response.assets[0].uri;
+        if (uri) setAvatarUri(uri);
+      }
+    });
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.avatarContainer}>
-        <TouchableOpacity onPress={handleAvatarClick}>
-          <View style={styles.avatarIcon}>
-            <MaterialIcons name="account" size={60} color="#fff" />
-          </View>
-          <Text style={styles.uploadText}>Change Photo</Text>
+        <TouchableOpacity onPress={isEditing ? handleAvatarClick : undefined}>
+          {avatarUri ? (
+            <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+          ) : (
+            <View style={styles.avatarIcon}>
+              <MaterialIcons name="account" size={60} color="#fff" />
+            </View>
+          )}
+          <Text style={styles.uploadText}>
+            {isEditing ? 'Change Photo' : 'Profile Photo'}
+          </Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.label}>First Name</Text>
+        <Text style={styles.label}>Full Name</Text>
         <TextInput
           style={styles.input}
-          value={name}
-          onChangeText={setName}
-          placeholder="Enter First Name"
+          value={fullName}
+          onChangeText={setFullName}
+          placeholder="Enter Full Name"
           editable={isEditing}
         />
 
-        <Text style={styles.label}>Last Name</Text>
+        <Text style={styles.label}>Mobile Number</Text>
         <TextInput
           style={styles.input}
-          value={lastname}
-          onChangeText={setLastname}
-          placeholder="Enter Last Name"
+          value={mobileNumber}
+          onChangeText={setMobileNumber}
+          placeholder="Enter Mobile Number"
+          keyboardType="phone-pad"
           editable={isEditing}
         />
 
@@ -87,16 +136,18 @@ const ProfileScreen: React.FC = () => {
               value="Male"
               status={gender === 'Male' ? 'checked' : 'unchecked'}
               onPress={() => isEditing && setGender('Male')}
+              color={theme.colors.primary}
             />
-            <Text>Male</Text>
+            <Text style={styles.label}>Male</Text>
           </View>
           <View style={styles.radioOption}>
             <RadioButton
               value="Female"
               status={gender === 'Female' ? 'checked' : 'unchecked'}
               onPress={() => isEditing && setGender('Female')}
+              color={theme.colors.primary}
             />
-            <Text>Female</Text>
+            <Text style={styles.label}>Female</Text>
           </View>
         </View>
 
@@ -130,21 +181,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  avatarImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
   uploadText: {
     marginTop: 10,
     color: theme.colors.primary,
     fontWeight: 'bold',
+    textAlign:'center'
   },
   content: {
     flex: 1,
     padding: theme.spacing.lg,
-  },
-  title: {
-    fontSize: theme.fonts.size.xl,
-    fontFamily: theme.fonts.bold,
-    color: theme.colors.text,
-    textAlign: 'center',
-    marginBottom: theme.spacing.md,
   },
   label: {
     fontSize: theme.fonts.size.md,

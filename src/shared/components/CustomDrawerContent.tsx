@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Image,
 } from 'react-native';
 import {
   DrawerContentScrollView,
@@ -13,6 +14,7 @@ import {
 import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Snackbar, Portal } from 'react-native-paper';
 import theme from '../theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const APP_VERSION = '1.0.0';
 
@@ -22,6 +24,26 @@ const CustomDrawerContent = (props: any) => {
   // Snackbar state
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [profile, setProfile] = useState({
+    fullName: '',
+    email: '',
+    avatarUri: '',
+  });
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      const data = await AsyncStorage.getItem('userProfile');
+      if (data) {
+        const parsed = JSON.parse(data);
+        setProfile({
+          fullName: parsed.fullName || '',
+          email: parsed.email || '',
+          avatarUri: parsed.avatarUri || '',
+        });
+      }
+    };
+    loadProfile();
+  }, []);
 
   const showSnackbar = (message: string) => {
     setSnackbarMessage(message);
@@ -47,12 +69,18 @@ const CustomDrawerContent = (props: any) => {
       {/* User Profile Section */}
       <View style={styles.profileRow}>
         <View style={styles.avatar}>
-          <MaterialIcons name="account" size={40} color="#fff" />
+          {profile.avatarUri ? (
+            <Image
+              source={{ uri: profile.avatarUri }}
+              style={{ width: 60, height: 60, borderRadius: 40 }}
+            />
+          ) : <MaterialIcons name="account" size={40} color="#fff" />}
+
         </View>
 
         <View style={styles.userInfo}>
-          <Text style={styles.userName}>Yashwant Lohar</Text>
-          <Text style={styles.userEmail}>yashwantlohar@gmail.com</Text>
+          <Text style={styles.userName}>{profile.fullName}</Text>
+          <Text style={styles.userEmail}>{profile.email}</Text>
           <TouchableOpacity
             style={styles.viewProfileButton}
             onPress={() => props.navigation.navigate('Profile')}
@@ -86,7 +114,7 @@ const CustomDrawerContent = (props: any) => {
           <TouchableOpacity
             style={styles.quickButton}
             onPress={() => showSnackbar('Coming Soon...')}
-            >
+          >
             <MaterialIcons name="tools" size={28} color={theme.colors.primary} />
             <Text style={styles.quickButtonText}>Services</Text>
           </TouchableOpacity>
@@ -294,6 +322,7 @@ const styles = StyleSheet.create({
   userInfo: {
     flex: 1,
     justifyContent: 'center',
+    marginHorizontal:theme.spacing.sm
   },
 
   userName: {
