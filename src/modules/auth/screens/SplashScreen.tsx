@@ -142,19 +142,27 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
         barStyle="light-content" // Light text for visibility on dark background
       /> */}
 
-    
+
 
       {/* Overlay for the text and button */}
       <View style={styles.overlay}>
-          {/* Logo image centered at the top */}
-      <View style={styles.imageContainer}>
-        <Image
-          source={require('../../../assets/splashLogo.jpg')}
-          style={styles.image}
-        />
-      </View>
+        {/* Logo image centered at the top */}
+        <View style={styles.imageContainer}>
+          <Image
+            source={require('../../../assets/splashLogo.jpg')}
+            style={styles.image}
+          />
+        </View>
         <Text style={styles.title}>Welcome to Shopkart</Text>
-        <Text style={styles.subtitle}>Checking your location...</Text>
+        <Text style={styles.subtitle}>
+          {loading
+            ? 'Checking your location...'
+            : location
+              ? 'Location found successfully! 😊'
+              : locationError
+                ? 'Failed to fetch location.'
+                : ''}
+        </Text>
         {loading ? (
           <ActivityIndicator size="large" color={theme.colors.primary} />
         ) : location ? (

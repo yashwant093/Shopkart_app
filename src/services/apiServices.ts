@@ -1,9 +1,10 @@
 // services/api.ts
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { BASE_URL } from '../constants/apiConstants';
 // import { logout } from '../features/auth/authSlice';
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: 'https://api.escuelajs.co/api/v1/',
+  baseUrl: BASE_URL,
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as any).auth.token;
     if (token) {

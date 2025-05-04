@@ -59,6 +59,8 @@ import CreateShop from '../modules/shop/components/CreateShop/CreateShop'; // Im
 import CustomHeader from '../shared/components/CustomHeader';
 import ShoppingDashboardCategory from '../modules/shop/screens/ShopDashboardCategory/ShoppingDashboardCategory';
 import ShoppingProductDetailsScreen from '../modules/shop/screens/ShoppingProductDetails/ShoppingProductDetailsScreen';
+import ShopDetailScreen from '../modules/shop/screens/Shops/ShopDetailScreen';
+import ShoppingGraphAnaylsis from '../modules/shop/screens/Shops/ShoppingGraphAnaylsis';
 
 const Stack = createNativeStackNavigator();
 
@@ -134,6 +136,26 @@ const AppNavigator = () => {
             />
           ),
         }}
+      />
+
+      <Stack.Screen
+        name="ShopDetailScreen"
+        component={ShopDetailScreen}
+        options={{
+          header: ({ navigation }) => (
+            <CustomHeader
+              title="Shop"
+              navigation={navigation}
+              showDrawerIcon={true}
+              showIcons={true}
+            />
+          ),
+        }}
+      />
+
+      <Stack.Screen
+        name="ShoppingGraphAnaylsis"
+        component={ShoppingGraphAnaylsis}
       />
 
     </Stack.Navigator>

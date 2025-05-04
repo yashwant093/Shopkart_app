@@ -1,1 +1,1 @@
-export const BASE_URL = 'https://yourapi.com/api';
+export const BASE_URL = 'https://api.escuelajs.co/api/v1/';

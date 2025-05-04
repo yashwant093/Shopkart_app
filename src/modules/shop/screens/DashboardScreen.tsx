@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ScrollView, 
 import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import theme from '../../../shared/theme';
 import ShoppingDashboardCategory from './ShopDashboardCategory/ShoppingDashboardCategory';
+import ShoppingGraphAnaylsis from './Shops/ShoppingGraphAnaylsis';
 
 const DashboardScreen = ({ navigation }: any) => {
 
@@ -85,6 +86,10 @@ const DashboardScreen = ({ navigation }: any) => {
 
         <View style={styles.container}>
           <ShoppingDashboardCategory />
+        </View>
+
+        <View style={styles.container}>
+          <ShoppingGraphAnaylsis />
         </View>
 
         {/* Scrollable Advertisement Image */}
