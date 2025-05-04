@@ -107,7 +107,7 @@
 // export default SelectImagesScreen;
 
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -139,6 +139,13 @@ const CreateShop = () => {
   const [country, setCountry] = useState('');
 
   const [isSaveButtonEnabled, setIsSaveButtonEnabled] = useState(false);
+
+  useEffect(() => {
+    const isFilled = shopName && mobileNumber && email && aboutShop && panNumber &&
+                     pincode && locality && landmark && city && state && country;
+    setIsSaveButtonEnabled(!!isFilled);
+  }, [shopName, mobileNumber, email, aboutShop, panNumber, pincode, locality, landmark, city, state, country]);
+  
 
   const handleSelectCoverPhoto = () => {
     launchImageLibrary({ mediaType: 'photo' }, (response) => {
@@ -324,7 +331,8 @@ const styles = StyleSheet.create({
   coverPhoto: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
+    resizeMode: 'stretch',
+    borderRadius: 8,
   },
   coverPhotoText: {
     color: theme.colors.primary,
@@ -336,17 +344,17 @@ const styles = StyleSheet.create({
     transform: [{ translateY: -70 }], // Center the logo properly
     height: 60,
     width: 80,
-    // borderRadius: 30,
     backgroundColor: theme.colors.text,
     justifyContent: 'center',
     alignItems: 'center',
-    // overflow: 'hidden',
-    borderWidth: 1
+    borderWidth: 1,
+    borderRadius: 8,
   },
   logo: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
+    resizeMode: 'stretch',
+    borderRadius: 8,
   },
   logoText: {
     color: theme.colors.primary,
@@ -369,12 +377,12 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: theme.colors.muted,
+    borderColor: theme.colors.border, // or a suitable color from theme
+    padding: 10,
     borderRadius: 6,
-    padding: theme.spacing.md,
-    fontSize: theme.fonts.size.md,
     color: theme.colors.text,
-  },
+    backgroundColor: theme.colors.surface,
+  },  
   addressHeading: {
     fontSize: theme.fonts.size.sm,
     fontFamily: theme.fonts.medium,
@@ -389,7 +397,8 @@ const styles = StyleSheet.create({
   NestedPhotoContainer: {
     backgroundColor: theme.colors.text,
     height: 170,
-    width: '100%'
+    width: '100%',
+    borderRadius: 8,
   },
   NestedLogoContainer: {
     backgroundColor: theme.colors.text,

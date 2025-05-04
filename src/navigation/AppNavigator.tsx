@@ -61,6 +61,7 @@ import ShoppingDashboardCategory from '../modules/shop/screens/ShopDashboardCate
 import ShoppingProductDetailsScreen from '../modules/shop/screens/ShoppingProductDetails/ShoppingProductDetailsScreen';
 import ShopDetailScreen from '../modules/shop/screens/Shops/ShopDetailScreen';
 import ShoppingGraphAnaylsis from '../modules/shop/screens/Shops/ShoppingGraphAnaylsis';
+import UploadProductScreen from '../modules/shop/screens/Shops/UploadProductScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -156,6 +157,21 @@ const AppNavigator = () => {
       <Stack.Screen
         name="ShoppingGraphAnaylsis"
         component={ShoppingGraphAnaylsis}
+      />
+
+      <Stack.Screen
+        name="UploadProductScreen"
+        component={UploadProductScreen}
+        options={{
+          header: ({ navigation }) => (
+            <CustomHeader
+              title="Upload Product"
+              navigation={navigation}
+              showDrawerIcon={true}
+              showIcons={true}
+            />
+          ),
+        }}
       />
 
     </Stack.Navigator>

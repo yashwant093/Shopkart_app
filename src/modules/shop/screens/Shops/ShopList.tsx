@@ -61,7 +61,7 @@ const shops = [
   // Add more shops as needed
 ];
 
-const ShopList = ({ navigation }:any) => {
+const ShopList = ({ navigation }: any) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const toggleExpand = (id: string) => {
@@ -69,8 +69,8 @@ const ShopList = ({ navigation }:any) => {
     setExpandedId(prev => (prev === id ? null : id));
   };
 
-  const navigateToShopDetail = (shopId: string) => {
-    navigation.navigate('ShopDetailScreen', { shopId });  // Pass the shopId to the next screen
+  const navigateToShopDetail = (shop: any) => {
+    navigation.navigate('ShopDetailScreen', { shop });
   };
 
   return (
@@ -99,19 +99,19 @@ const ShopList = ({ navigation }:any) => {
             </TouchableOpacity>
             {isExpanded && (
               <View style={styles.detailsContainer}>
-                <Text style={styles.detailText}>Mobile : {item.mobileNumber}</Text>
-                <Text style={styles.detailText}>Email : {item.email}</Text>
-                <Text style={styles.detailText}>About : {item.aboutShop}</Text>
-                <Text style={styles.detailText}>PAN : {item.panNumber}</Text>
-                <Text style={styles.detailText}>Pincode : {item.pincode}</Text>
-                <Text style={styles.detailText}>Locality : {item.locality}</Text>
-                <Text style={styles.detailText}>Landmark : {item.landmark}</Text>
-                <Text style={styles.detailText}>City : {item.city}</Text>
-                <Text style={styles.detailText}>State : {item.state}</Text>
-                <Text style={styles.detailText}>Country : {item.country}</Text>
+                <Text style={styles.detailText}>Mobile: {item.mobileNumber}</Text>
+                <Text style={styles.detailText}>Email: {item.email}</Text>
+                <Text style={styles.detailText}>About: {item.aboutShop}</Text>
+                <Text style={styles.detailText}>PAN: {item.panNumber}</Text>
+                <Text style={styles.detailText}>Pincode: {item.pincode}</Text>
+                <Text style={styles.detailText}>Locality: {item.locality}</Text>
+                <Text style={styles.detailText}>Landmark: {item.landmark}</Text>
+                <Text style={styles.detailText}>City: {item.city}</Text>
+                <Text style={styles.detailText}>State: {item.state}</Text>
+                <Text style={styles.detailText}>Country: {item.country}</Text>
 
                 <TouchableOpacity
-                  onPress={() => navigateToShopDetail(item.id)}
+                  onPress={() => navigateToShopDetail(item)}
                   style={styles.editButton}>
                   <Text style={styles.editButtonText}>Go Shop</Text>
                 </TouchableOpacity>
