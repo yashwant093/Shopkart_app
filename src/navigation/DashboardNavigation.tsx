@@ -155,7 +155,7 @@ import CustomHeader from '../shared/components/CustomHeader';
 import theme from '../shared/theme';
 import ShopList from '../modules/shop/screens/Shops/ShopList';
 import CreateShop from '../modules/shop/components/CreateShop/CreateShop';
-import DrawerNavigator from './DrawerNavigator';
+import DrawerNavigator from './DrawerNavigation';
 
 export type DashboardTabParamList = {
   Dashboard: undefined;
@@ -167,7 +167,7 @@ export type DashboardTabParamList = {
 
 const Tab = createBottomTabNavigator<DashboardTabParamList>();
 
-const DashboardNavigator = () => (
+const DashboardNavigation = () => (
   <Tab.Navigator
     screenOptions={({ route, navigation }) => ({
       header: () => (
@@ -242,4 +242,4 @@ const DashboardNavigator = () => (
   </Tab.Navigator>
 );
 
-export default DashboardNavigator;
+export default DashboardNavigation;

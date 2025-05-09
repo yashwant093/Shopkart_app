@@ -8,7 +8,7 @@ import CustomHeader from '../shared/components/CustomHeader';
 
 const Drawer = createDrawerNavigator();
 
-const DrawerNavigator = () => (
+const DrawerNavigation = () => (
   <Drawer.Navigator
     drawerContent={(props) => <CustomDrawerContent {...props} />}
     screenOptions={{
@@ -32,4 +32,4 @@ const DrawerNavigator = () => (
   </Drawer.Navigator>
 );
 
-export default DrawerNavigator;
+export default DrawerNavigation;

@@ -7,7 +7,7 @@ import ForgotPassword from '../modules/auth/screens/ForgotPassword';
 
 const Stack = createNativeStackNavigator();
 
-const AuthNavigator = ({ setIsAuthenticated }: any) => (
+const AuthNavigation = ({ setIsAuthenticated }: any) => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="Login">
       {(props) => <LoginScreen {...props} setIsAuthenticated={setIsAuthenticated} />}
@@ -18,4 +18,4 @@ const AuthNavigator = ({ setIsAuthenticated }: any) => (
   </Stack.Navigator>
 );
 
-export default AuthNavigator;
+export default AuthNavigation;

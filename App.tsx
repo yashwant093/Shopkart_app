@@ -67,7 +67,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { Provider as PaperProvider } from 'react-native-paper';
-import AppNavigator from './src/navigation/AppNavigator';
+import AppNavigator from './src/navigation/AppNavigation';
 import { Provider } from 'react-redux';
 import { store } from './src/modules/auth/store/store';
 

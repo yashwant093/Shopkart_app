@@ -53,8 +53,8 @@
 import React, { useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SplashScreen from '../modules/auth/screens/SplashScreen';
-import AuthNavigator from './AuthNavigator';
-import DrawerNavigator from './DashboardNavigator';
+import AuthNavigator from './AuthNavigation';
+import DrawerNavigator from './DashboardNavigation';
 import CreateShop from '../modules/shop/components/CreateShop/CreateShop'; // Import CreateShop
 import CustomHeader from '../shared/components/CustomHeader';
 import ShoppingDashboardCategory from '../modules/shop/screens/ShopDashboardCategory/ShoppingDashboardCategory';
@@ -65,7 +65,7 @@ import UploadProductScreen from '../modules/shop/screens/Shops/UploadProductScre
 
 const Stack = createNativeStackNavigator();
 
-const AppNavigator = () => {
+const AppNavigation = () => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -178,4 +178,4 @@ const AppNavigator = () => {
   );
 };
 
-export default AppNavigator;
+export default AppNavigation;

@@ -23,7 +23,7 @@ export type DashboardTabParamList = {
 
 const Tab = createBottomTabNavigator<DashboardTabParamList>();
 
-const DashboardTabNavigator = () => {
+const TabNavigation = () => {
     return (
         <Tab.Navigator
             screenOptions={({ route, navigation }) => ({
@@ -82,4 +82,4 @@ const DashboardTabNavigator = () => {
     );
 };
 
-export default DashboardTabNavigator;
+export default TabNavigation;

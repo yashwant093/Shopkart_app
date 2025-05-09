@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Appbar, Snackbar, Text } from 'react-native-paper';
 import { DrawerActions, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { DashboardTabParamList } from '../../navigation/DashboardTabNavigator';
+import { DashboardTabParamList } from '../../navigation/TabNavigation';
 import colors from '../../shared/theme/colors'; // Import your theme colors
 
 type CustomHeaderProps = {
