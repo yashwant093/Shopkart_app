@@ -15,8 +15,8 @@ import {
 import Geolocation from 'react-native-geolocation-service';
 import NetInfo from '@react-native-community/netinfo';
 import { useDispatch } from 'react-redux';
-import { useLoginMutation } from '../../../services/apiServices';
-import { setTokens } from '../../../modules/auth/store/authSlice';
+import { useGetTokenMutation } from '../../../services/apiServices';
+import { setToken } from '../../../modules/auth/store/authSlice';
 import theme from '../../../shared/theme';
 
 const { width, height } = Dimensions.get('window');
@@ -33,7 +33,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
   const [tokenSuccess, setTokenSuccess] = useState(false);
 
   const dispatch = useDispatch();
-  const [loginToken] = useLoginMutation();
+  const [loginToken] = useGetTokenMutation();
 
   // Request location permission on Android
   const requestLocationPermission = async (): Promise<boolean> => {
@@ -49,9 +49,14 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
             buttonPositive: 'OK',
           }
         );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          Alert.alert('Permission Denied', 'Location permission was denied.');
+          return false;
+        }
+        return true;
       } catch (error) {
         console.warn('Permission error:', error);
+        Alert.alert('Permission Error', 'An error occurred requesting location permission.');
         return false;
       }
     }
@@ -69,7 +74,9 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
           const data = await res.json();
           const address = data?.address;
           const city = address?.city || address?.town || address?.village || 'Unknown City';
@@ -88,41 +95,58 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
     );
   };
 
-  const handleSplash = async () => {
-    try {
-      const netState = await NetInfo.fetch();
-      setNetworkConnected(netState.isConnected ?? false);
-
-      if (!netState.isConnected) {
-        Alert.alert('No Internet', 'Please check your internet connection.');
-        return;
-      }
-
-      // Authenticate and get token
-      const tokenPayload = { username: 'Admin', password: 'Shop@123' };
-      const tokenData = await loginToken(tokenPayload).unwrap();
-
-      dispatch(setTokens({
-        accessToken: tokenData.accessToken,
-        refreshToken: tokenData.refreshToken,
-      }));
-
-      setTokenSuccess(true);
-      console.log('Token fetched successfully! 🔑',tokenPayload)
-      await fetchLocation();
-    } catch (err) {
-      console.error('Login error:', err);
-      Alert.alert('Authentication Failed', 'Unable to fetch token. Try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    handleSplash();
-  }, []);
+    const handleSplash = async () => {
+      try {
+        const netState = await NetInfo.fetch();
+        setNetworkConnected(netState.isConnected ?? false);
 
-  const renderStatus = () => { 
+        if (!netState.isConnected) {
+          Alert.alert('No Internet', 'Please check your internet connection.');
+          setLoading(false);
+          return;
+        }
+
+        const tokenPayload = { username: 'Admin', password: 'Shop@123' };
+        const tokenData = await loginToken(tokenPayload).unwrap();
+
+        console.log('tokenData:', tokenData);
+
+        // Safely extract access token from tokenData based on actual structure
+        const accessToken =
+          tokenData.accessToken || tokenData.token || tokenData.data?.accessToken;
+
+        if (!accessToken) {
+          throw new Error('Access token not found in response');
+        }
+
+        dispatch(
+          setToken({
+            accessToken,
+            refreshToken: accessToken,
+          })
+        );
+
+        setTokenSuccess(true);
+
+        Alert.alert(
+          'Success',
+          `Token fetched and stored successfully! 🔑\n\nToken: ${accessToken}`
+        );
+
+        await fetchLocation();
+      } catch (err) {
+        console.error('Login error:', err);
+        Alert.alert('Authentication Failed', 'Unable to fetch token. Try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    handleSplash();
+  }, [dispatch, loginToken]);
+
+  const renderStatus = () => {
     if (loading) {
       return (
         <>
@@ -138,6 +162,13 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
     }
 
     if (tokenSuccess) {
+      // After token success, show location or error for better UX
+      if (location) {
+        return <Text style={styles.subtitle}>Location found: {location}</Text>;
+      }
+      if (locationError) {
+        return <Text style={styles.subtitle}>{locationError}</Text>;
+      }
       return <Text style={styles.subtitle}>Token fetched successfully! 🔑</Text>;
     }
 

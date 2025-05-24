@@ -15,18 +15,12 @@ import {
 } from 'react-native';
 import theme from '../../../shared/theme';
 import { useDispatch } from 'react-redux';
-import { useLoginMutation } from '../../../services/apiServices';
-import { setCredentials } from '../store/authSlice';
+import { useLoginMutation } from '../../../services/apiServices'; // Use login mutation here
 
-const USE_STATIC_LOGIN = true;
-
-const STATIC_EMAIL = 'admin@gmail.com';
-const STATIC_PASSWORD = '123456';
-
-const LoginScreen = ({ navigation, setIsAuthenticated }: any) => {
+const LoginScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [login, { isLoading }] = useLoginMutation();
+  const [login, { isLoading }] = useLoginMutation(); // Use login mutation
   const dispatch = useDispatch();
 
   const handleLogin = async () => {
@@ -35,22 +29,17 @@ const LoginScreen = ({ navigation, setIsAuthenticated }: any) => {
       return;
     }
 
-    if (USE_STATIC_LOGIN) {
-      if (email === STATIC_EMAIL && password === STATIC_PASSWORD) {
-        setIsAuthenticated(true);
-        Alert.alert('Success', 'Static Login Successful');
-      } else {
-        Alert.alert('Login Failed', 'Invalid static credentials');
-      }
-    } else {
-      try {
-        const res = await login({ email, password }).unwrap();
-        dispatch(setCredentials(res.access_token));
-        setIsAuthenticated(true);
-        Alert.alert('Success', 'Login Successful');
-      } catch (error) {
-        Alert.alert('Login Failed', 'Invalid credentials');
-      }
+    try {
+      // Call login API with entered email and password
+      const response = await login({ email, password }).unwrap();
+
+      // Assuming response contains token or user data, dispatch if needed
+      // dispatch(setCredentials(response.accessToken)); // uncomment if you have setCredentials action
+
+      Alert.alert('Success', 'Login Successful');
+      navigation.replace('Home');
+    } catch (error) {
+      Alert.alert('Login Failed', 'Invalid credentials');
     }
   };
 

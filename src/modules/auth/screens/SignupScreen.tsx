@@ -1,5 +1,3 @@
-// screens/auth/SignupScreen.tsx
-
 import React, { useState } from 'react';
 import {
   View,
@@ -19,15 +17,24 @@ import { useDispatch } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import theme from '../../../shared/theme';
-import { useGenerateOtpMutation } from '../../../services/apiServices';
+import { useGenerateOTPMutation } from '../../../services/apiServices';
 import { AuthStackParamList } from '../../../navigation/AuthNavigation';
-import { setTokens, setUser } from '../store/authSlice';
 
+// Navigation type
 type SignupScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Signup'>;
 
 type Props = {
   navigation: SignupScreenNavigationProp;
 };
+
+// API response type
+interface GenerateOtpResponse {
+  result: number;
+  resultMessage: string;
+  resultFlag: boolean;
+  remark: string | null;
+  resultData: any | null;
+}
 
 const SignupScreen = ({ navigation }: Props) => {
   const dispatch = useDispatch();
@@ -35,13 +42,14 @@ const SignupScreen = ({ navigation }: Props) => {
   const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
   const [errors, setErrors] = useState({
     name: '',
     mobileNumber: '',
     password: '',
   });
 
-  const [generateOtp] = useGenerateOtpMutation();
+  const [generateOtp] = useGenerateOTPMutation();
 
   const validateForm = () => {
     const newErrors = { name: '', mobileNumber: '', password: '' };
@@ -59,7 +67,7 @@ const SignupScreen = ({ navigation }: Props) => {
     }
 
     setErrors(newErrors);
-    return !Object.values(newErrors).some((e) => e !== '');
+    return !Object.values(newErrors).some(Boolean);
   };
 
   const saveUserData = async () => {
@@ -68,7 +76,7 @@ const SignupScreen = ({ navigation }: Props) => {
       await AsyncStorage.setItem('mobileNumber', mobileNumber);
       await AsyncStorage.setItem('password', password);
     } catch (error) {
-      console.error('Error saving data to AsyncStorage', error);
+      console.error('Error saving to AsyncStorage:', error);
     }
   };
 
@@ -78,30 +86,33 @@ const SignupScreen = ({ navigation }: Props) => {
 
     setLoading(true);
     try {
-      const response = await generateOtp({ mobileNo: mobileNumber, password }).unwrap();
+      const response = await generateOtp({
+        mobileNo: mobileNumber,
+        password,
+      }).unwrap();
 
-      if (response.result === 1) {
-        if (response.accessToken && response.refreshToken) {
-          await AsyncStorage.setItem('accessToken', response.accessToken);
-          await AsyncStorage.setItem('refreshToken', response.refreshToken);
-          dispatch(setTokens({ accessToken: response.accessToken, refreshToken: response.refreshToken }));
+      if (response.result === 1 && response.resultFlag) {
+        // Save user data
+        await saveUserData();
 
-          if (response.user) {
-            dispatch(setUser(response.user));
-            await AsyncStorage.setItem('user', JSON.stringify(response.user));
-          }
-
-          await saveUserData();
-          Alert.alert('Success', response.resultMessage || 'OTP sent');
-          navigation.navigate('OTP', { mobileNumber, password });
-        } else {
-          Alert.alert('Error', 'Missing tokens in response');
+        // Save token from response to AsyncStorage
+        // Update this line if token path is different
+        const token = response.resultData?.token;
+        if (token) {
+          await AsyncStorage.setItem('accessToken', token);
+          // Optional: You can dispatch to Redux store here if you want
+          // dispatch(setToken(token));
         }
+
+        Alert.alert('Success', response.resultMessage || 'OTP sent');
+        navigation.navigate('OTP', { mobileNumber, password });
       } else {
-        Alert.alert('Error', response.resultMessage || 'Failed to generate OTP');
+        Alert.alert('Error', response.resultMessage || 'OTP generation failed');
       }
-    } catch (error) {
-      Alert.alert('Error', 'An error occurred while generating OTP');
+    } catch (err: any) {
+      console.error('OTP error:', err);
+      const message = err?.data?.resultMessage || err?.error || 'Something went wrong. Please try again.';
+      Alert.alert('Error', message);
     } finally {
       setLoading(false);
     }
@@ -160,7 +171,7 @@ const SignupScreen = ({ navigation }: Props) => {
             {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
           </View>
 
-          {/* Sign-Up Button */}
+          {/* Sign Up Button */}
           <View style={styles.buttonWrapper}>
             <TouchableOpacity
               style={styles.signupButton}
@@ -176,7 +187,7 @@ const SignupScreen = ({ navigation }: Props) => {
           </View>
         </View>
 
-        {/* Login Link */}
+        {/* Already have account */}
         <TouchableOpacity onPress={() => navigation.navigate('Login')}>
           <Text style={styles.loginText}>Already have an account? Log In</Text>
         </TouchableOpacity>

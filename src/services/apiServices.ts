@@ -53,20 +53,19 @@
 
 import { BaseQueryApi, createApi, FetchArgs, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { BASE_URL } from '../constants/apiConstants';
+import { RootState } from '../modules/auth/store/store';
+import { GenerateOTPRequest, GenerateOTPResponse, LoginRequest, LoginResponse, TokenRequest, TokenResponse } from '../modules/auth/store/api';
 
 const baseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
-  prepareHeaders: async (headers, { getState, endpoint }) => {
-    const token = (getState() as any)?.auth?.accessToken;
-    const publicEndpoints = ['login'];
-
-    if (!publicEndpoints.includes(endpoint) && token) {
+  prepareHeaders: (headers, { getState }) => {
+    const token = (getState() as RootState).auth.accessToken;
+    if (token) {
       headers.set('Authorization', `Bearer ${token}`);
     }
-    headers.set('Content-Type', 'application/json');
     return headers;
   },
-});
+})
 
 const baseQueryWithReauth = async (args: string | FetchArgs, api: BaseQueryApi, extraOptions: {}) => {
   const result = await baseQuery(args, api, extraOptions);
@@ -83,21 +82,30 @@ export const api = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
-    login: builder.mutation({
+    getToken: builder.mutation<TokenResponse, TokenRequest>({
       query: (credentials) => ({
         url: 'Auth/GenerateToken',
         method: 'POST',
         body: credentials,
       }),
     }),
-    generateOtp: builder.mutation({
-      query: (credentials) => ({
+    generateOTP: builder.mutation<GenerateOTPResponse, GenerateOTPRequest>({
+      query: ({ mobileNo, password }) => ({
         url: 'Login/GenerateOTP',
         method: 'POST',
-        body: credentials,
+        body: { mobileNo, password },
       }),
     }),
+
+    login: builder.mutation<LoginResponse, LoginRequest>({
+      query: ({ email, password }) => ({
+        url: '/login', // Replace with actual login endpoint
+        method: 'POST',
+         body: { email, password },
+      }),
+    }),
+
   }),
 });
 
-export const { useLoginMutation, useGenerateOtpMutation } = api;
+export const { useGetTokenMutation, useGenerateOTPMutation,useLoginMutation } = api;
