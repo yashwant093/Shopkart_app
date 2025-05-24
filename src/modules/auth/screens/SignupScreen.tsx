@@ -1,3 +1,5 @@
+// screens/auth/SignupScreen.tsx
+
 import React, { useState } from 'react';
 import {
   View,
@@ -9,98 +11,177 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 import theme from '../../../shared/theme';
+import { useGenerateOtpMutation } from '../../../services/apiServices';
+import { AuthStackParamList } from '../../../navigation/AuthNavigation';
+import { setTokens, setUser } from '../store/authSlice';
 
-const SignupScreen = ({ navigation }: any) => {
+type SignupScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Signup'>;
+
+type Props = {
+  navigation: SignupScreenNavigationProp;
+};
+
+const SignupScreen = ({ navigation }: Props) => {
+  const dispatch = useDispatch();
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);  // Manage loading state
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({
+    name: '',
+    mobileNumber: '',
+    password: '',
+  });
 
-  const handleSignup = () => {
-    if (name && email && password) {
-      setLoading(true);  // Show loader
-      setTimeout(() => {
-        // Simulate a signup API call
-        setLoading(false);  // Hide loader after the attempt
-        Alert.alert('Success', 'Account created!');
-        navigation.navigate('OTP');
-      }, 2000);  // Simulating a 2-second delay (replace with actual API call)
-    } else {
-      Alert.alert('Error', 'Please fill all fields');
+  const [generateOtp] = useGenerateOtpMutation();
+
+  const validateForm = () => {
+    const newErrors = { name: '', mobileNumber: '', password: '' };
+
+    if (!name.trim()) newErrors.name = 'Full Name is required';
+    if (!mobileNumber.trim()) {
+      newErrors.mobileNumber = 'Mobile Number is required';
+    } else if (!/^\d{10}$/.test(mobileNumber)) {
+      newErrors.mobileNumber = 'Enter a valid 10-digit mobile number';
+    }
+    if (!password.trim()) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    setErrors(newErrors);
+    return !Object.values(newErrors).some((e) => e !== '');
+  };
+
+  const saveUserData = async () => {
+    try {
+      await AsyncStorage.setItem('name', name);
+      await AsyncStorage.setItem('mobileNumber', mobileNumber);
+      await AsyncStorage.setItem('password', password);
+    } catch (error) {
+      console.error('Error saving data to AsyncStorage', error);
+    }
+  };
+
+  const handleSignup = async () => {
+    Keyboard.dismiss();
+    if (!validateForm()) return;
+
+    setLoading(true);
+    try {
+      const response = await generateOtp({ mobileNo: mobileNumber, password }).unwrap();
+
+      if (response.result === 1) {
+        if (response.accessToken && response.refreshToken) {
+          await AsyncStorage.setItem('accessToken', response.accessToken);
+          await AsyncStorage.setItem('refreshToken', response.refreshToken);
+          dispatch(setTokens({ accessToken: response.accessToken, refreshToken: response.refreshToken }));
+
+          if (response.user) {
+            dispatch(setUser(response.user));
+            await AsyncStorage.setItem('user', JSON.stringify(response.user));
+          }
+
+          await saveUserData();
+          Alert.alert('Success', response.resultMessage || 'OTP sent');
+          navigation.navigate('OTP', { mobileNumber, password });
+        } else {
+          Alert.alert('Error', 'Missing tokens in response');
+        }
+      } else {
+        Alert.alert('Error', response.resultMessage || 'Failed to generate OTP');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An error occurred while generating OTP');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={styles.container}
-    >
-      <View style={styles.formContainer}>
-        {/* Title for Signup */}
-        <Text style={styles.title}>Create Account</Text>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.container}
+      >
+        <View style={styles.formContainer}>
+          <Text style={styles.title}>Create Account</Text>
 
-        {/* Full Name Label and Input */}
-        <View style={styles.inputWrapper}>
-          <Text style={styles.label}>Full Name</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your full name"
-            placeholderTextColor={theme.colors.muted}
-            value={name}
-            onChangeText={setName}
-          />
+          {/* Full Name */}
+          <View style={styles.inputWrapper}>
+            <Text style={styles.label}>Full Name</Text>
+            <TextInput
+              style={[styles.input, errors.name && styles.inputError]}
+              placeholder="Enter your full name"
+              placeholderTextColor={theme.colors.muted}
+              value={name}
+              maxLength={20}
+              onChangeText={setName}
+            />
+            {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+          </View>
+
+          {/* Mobile Number */}
+          <View style={styles.inputWrapper}>
+            <Text style={styles.label}>Mobile Number</Text>
+            <TextInput
+              style={[styles.input, errors.mobileNumber && styles.inputError]}
+              placeholder="Enter your mobile number"
+              placeholderTextColor={theme.colors.muted}
+              keyboardType="phone-pad"
+              value={mobileNumber}
+              maxLength={10}
+              onChangeText={setMobileNumber}
+            />
+            {errors.mobileNumber && <Text style={styles.errorText}>{errors.mobileNumber}</Text>}
+          </View>
+
+          {/* Password */}
+          <View style={styles.inputWrapper}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              style={[styles.input, errors.password && styles.inputError]}
+              placeholder="Enter your password"
+              placeholderTextColor={theme.colors.muted}
+              secureTextEntry
+              value={password}
+              maxLength={15}
+              onChangeText={setPassword}
+            />
+            {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+          </View>
+
+          {/* Sign-Up Button */}
+          <View style={styles.buttonWrapper}>
+            <TouchableOpacity
+              style={styles.signupButton}
+              onPress={handleSignup}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color={theme.colors.white} />
+              ) : (
+                <Text style={styles.buttonText}>Sign Up</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Email Label and Input */}
-        <View style={styles.inputWrapper}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your email"
-            placeholderTextColor={theme.colors.muted}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
-        </View>
-
-        {/* Password Label and Input */}
-        <View style={styles.inputWrapper}>
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your password"
-            placeholderTextColor={theme.colors.muted}
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-        </View>
-
-        {/* Sign-Up Button with Loader */}
-        <View style={styles.buttonWrapper}>
-          <TouchableOpacity
-            style={styles.signupButton}
-            onPress={handleSignup}
-            disabled={loading}  // Disable the button when loading
-          >
-            {loading ? (
-              <ActivityIndicator size="small" color="#fff" />  // Show loader inside the button
-            ) : (
-              <Text style={styles.buttonText}>Sign Up</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Login Link */}
-      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.loginText}>Already have an account? Log In</Text>
-      </TouchableOpacity>
-    </KeyboardAvoidingView>
+        {/* Login Link */}
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <Text style={styles.loginText}>Already have an account? Log In</Text>
+        </TouchableOpacity>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -112,9 +193,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   formContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',  // Opacity effect for background
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     padding: theme.spacing.lg,
-    borderRadius: 8,  // Optional: rounded corners for the form container
+    borderRadius: 8,
     marginBottom: theme.spacing.md,
   },
   title: {
@@ -141,6 +222,14 @@ const styles = StyleSheet.create({
     fontSize: theme.fonts.size.md,
     color: theme.colors.text,
   },
+  inputError: {
+    borderColor: theme.colors.danger,
+  },
+  errorText: {
+    color: theme.colors.danger,
+    fontSize: theme.fonts.size.sm,
+    marginTop: 4,
+  },
   buttonWrapper: {
     marginBottom: theme.spacing.md,
   },
@@ -155,7 +244,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: theme.fonts.size.md,
     fontFamily: theme.fonts.medium,
-    color: '#fff',
+    color: theme.colors.white,
   },
   loginText: {
     textAlign: 'center',

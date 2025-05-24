@@ -63,7 +63,19 @@ import ShopDetailScreen from '../modules/shop/screens/Shops/ShopDetailScreen';
 import ShoppingGraphAnaylsis from '../modules/shop/screens/Shops/ShoppingGraphAnaylsis';
 import UploadProductScreen from '../modules/shop/screens/Shops/UploadProductScreen';
 
-const Stack = createNativeStackNavigator();
+// ✅ Define and export your navigation param list
+export type RootStackParamList = {
+  Auth: undefined;
+  Main: undefined;
+  CreateShop: undefined;
+  Category: undefined;
+  ShoppingProductDetails: undefined;
+  ShopDetailScreen: undefined;
+  ShoppingGraphAnaylsis: undefined;
+  UploadProductScreen: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const AppNavigation = () => {
   const [loading, setLoading] = useState(true);

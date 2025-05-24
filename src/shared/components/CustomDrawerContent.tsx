@@ -74,7 +74,7 @@ const CustomDrawerContent = (props: any) => {
               source={{ uri: profile.avatarUri }}
               style={{ width: 60, height: 60, borderRadius: 40 }}
             />
-          ) : <MaterialIcons name="account" size={40} color="#fff" />}
+          ) : <MaterialIcons name="account" size={40} color={theme.colors.white} />}
 
         </View>
 

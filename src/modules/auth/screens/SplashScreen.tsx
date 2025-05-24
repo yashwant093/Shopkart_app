@@ -5,18 +5,19 @@ import {
   ActivityIndicator,
   StyleSheet,
   ImageBackground,
-  StatusBar,
-  Dimensions,
-  PermissionsAndroid,
-  Platform,
   Alert,
-  Linking,
   Button,
   Image,
+  Dimensions,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
+import NetInfo from '@react-native-community/netinfo';
+import { useDispatch } from 'react-redux';
+import { useLoginMutation } from '../../../services/apiServices';
+import { setTokens } from '../../../modules/auth/store/authSlice';
 import theme from '../../../shared/theme';
-import colors from '../../../shared/theme/colors';
 
 const { width, height } = Dimensions.get('window');
 
@@ -26,43 +27,16 @@ type SplashScreenProps = {
 
 const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
   const [location, setLocation] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);  // To show the loading spinner
-  const [locationError, setLocationError] = useState<string | null>(null);  // To handle errors
+  const [loading, setLoading] = useState(true);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [networkConnected, setNetworkConnected] = useState(true);
+  const [tokenSuccess, setTokenSuccess] = useState(false);
 
-  const checkLocationService = () => {
-    Geolocation.getCurrentPosition(
-      (position) => {
-        setLocationError(null); // Reset errors
-        setLocation(null); // Reset location if it was previously set
-        setLoading(true); // Show loading indicator
-        getLocation(); // Try to fetch the location
-      },
-      (error) => {
-        if (error.code === 3) {
-          // Location services are turned off
-          Alert.alert(
-            'Location is off',
-            'Please enable location services to use this feature.',
-            [
-              {
-                text: 'Go to Settings',
-                onPress: () => Linking.openSettings(), // Open device settings
-              },
-              {
-                text: 'Cancel',
-                style: 'cancel',
-              },
-            ]
-          );
-        } else {
-          setLocationError('Error fetching location');
-          setLoading(false);  // Hide loading indicator when there is an error
-        }
-      }
-    );
-  };
+  const dispatch = useDispatch();
+  const [loginToken] = useLoginMutation();
 
-  const requestPermissions = async (): Promise<boolean> => {
+  // Request location permission on Android
+  const requestLocationPermission = async (): Promise<boolean> => {
     if (Platform.OS === 'android') {
       try {
         const granted = await PermissionsAndroid.request(
@@ -76,58 +50,107 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
           }
         );
         return granted === PermissionsAndroid.RESULTS.GRANTED;
-      } catch (err) {
-        console.warn(err);
+      } catch (error) {
+        console.warn('Permission error:', error);
         return false;
       }
     }
     return true;
   };
 
-  const getLocation = async () => {
-    const hasPermission = await requestPermissions();
+  const fetchLocation = async () => {
+    const hasPermission = await requestLocationPermission();
     if (!hasPermission) {
-      Alert.alert('Permission Denied', 'Location access was not granted.');
       setLocationError('Permission denied');
-      setLoading(false); // Hide loading indicator
       return;
     }
 
     Geolocation.getCurrentPosition(
       async (position) => {
-        const { latitude, longitude } = position.coords;
         try {
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-          );
-          const data = await response.json();
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const data = await res.json();
           const address = data?.address;
-
-          // Extract city, district, and state
           const city = address?.city || address?.town || address?.village || 'Unknown City';
           const state = address?.state || 'Unknown State';
-
-          const locationString = `${city}, ${state}`;
-          setLocation(locationString.trim());
+          setLocation(`${city}, ${state}`);
         } catch (error) {
-          console.error('Reverse geocoding error:', error);
+          console.error('Reverse geocode error:', error);
           setLocationError('Error fetching address');
         }
-        setLoading(false); // Hide loading indicator
       },
       (error) => {
-        console.error('Location error:', error.code, error.message);
+        console.error('Geolocation error:', error);
         setLocationError('Error fetching location');
-        setLoading(false); // Hide loading indicator
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
     );
   };
 
+  const handleSplash = async () => {
+    try {
+      const netState = await NetInfo.fetch();
+      setNetworkConnected(netState.isConnected ?? false);
+
+      if (!netState.isConnected) {
+        Alert.alert('No Internet', 'Please check your internet connection.');
+        return;
+      }
+
+      // Authenticate and get token
+      const tokenPayload = { username: 'Admin', password: 'Shop@123' };
+      const tokenData = await loginToken(tokenPayload).unwrap();
+
+      dispatch(setTokens({
+        accessToken: tokenData.accessToken,
+        refreshToken: tokenData.refreshToken,
+      }));
+
+      setTokenSuccess(true);
+      console.log('Token fetched successfully! 🔑',tokenPayload)
+      await fetchLocation();
+    } catch (err) {
+      console.error('Login error:', err);
+      Alert.alert('Authentication Failed', 'Unable to fetch token. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    // Check if location services are enabled and attempt to fetch location
-    checkLocationService();
-  }, []); // Empty dependency array ensures this runs once after component mounts
+    handleSplash();
+  }, []);
+
+  const renderStatus = () => { 
+    if (loading) {
+      return (
+        <>
+          <Text style={styles.subtitle}>Checking token...</Text>
+          <Text style={styles.subtitle}>Fetching location...</Text>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </>
+      );
+    }
+
+    if (!networkConnected) {
+      return <Text style={styles.subtitle}>No internet connection</Text>;
+    }
+
+    if (tokenSuccess) {
+      return <Text style={styles.subtitle}>Token fetched successfully! 🔑</Text>;
+    }
+
+    if (location) {
+      return <Text style={styles.subtitle}>Location found: {location}</Text>;
+    }
+
+    if (locationError) {
+      return <Text style={styles.subtitle}>{locationError}</Text>;
+    }
+
+    return null;
+  };
 
   return (
     <ImageBackground
@@ -135,55 +158,18 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
       style={styles.imageBackground}
       resizeMode="cover"
     >
-      {/* Status bar removed for now */}
-      {/* <StatusBar
-        translucent
-        backgroundColor={colors.statusBar} // Use the color from your theme
-        barStyle="light-content" // Light text for visibility on dark background
-      /> */}
-
-
-
-      {/* Overlay for the text and button */}
       <View style={styles.overlay}>
-        {/* Logo image centered at the top */}
-        <View style={styles.imageContainer}>
-          <Image
-            source={require('../../../assets/splashLogo.jpg')}
-            style={styles.image}
-          />
-        </View>
+        <Image
+          source={require('../../../assets/splashLogo.jpg')}
+          style={styles.image}
+        />
         <Text style={styles.title}>Welcome to Shopkart</Text>
-        <Text style={styles.subtitle}>
-          {loading
-            ? 'Checking your location...'
-            : location
-              ? 'Location found successfully! 😊'
-              : locationError
-                ? 'Failed to fetch location.'
-                : ''}
-        </Text>
-        {loading ? (
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-        ) : location ? (
-          <View style={styles.locationContainer}>
-            <Text style={styles.locationTitle}>📍 Your Location</Text>
-            <Text style={styles.locationText}>{location}</Text>
-          </View>
-        ) : locationError ? (
-          <View style={styles.locationContainer}>
-            <Text style={styles.locationText}>{locationError}</Text>
-          </View>
-        ) : null}
 
-        {/* Navigate button at the bottom */}
-        {(location || locationError) && (
+        {renderStatus()}
+
+        {!loading && (
           <View style={styles.buttonContainer}>
-            <Button
-              title="Start"
-              onPress={onFinish}  // Navigate to next screen
-              color={theme.colors.primary}
-            />
+            <Button title="Start" onPress={onFinish} color={theme.colors.primary} />
           </View>
         )}
       </View>
@@ -195,62 +181,36 @@ const styles = StyleSheet.create({
   imageBackground: {
     width: '100%',
     height: '100%',
-    justifyContent: 'flex-start', // Ensure that the content starts at the top
-  },
-  imageContainer: {
-    width: '100%',
-    alignItems: 'center',
-    marginTop: height * 0, // Adjust the margin-top to center the logo on the top
-  },
-  image: {
-    width: '80%', // Adjust width as per your requirement
-    height: height * 0.1, // Adjust height as needed (e.g., 20% of screen height)
-    resizeMode: 'contain', // Ensure the logo maintains its aspect ratio
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',  // Transparent black overlay
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: theme.spacing.lg,
-    position: 'relative',  // Set position to relative to position the button at the bottom
+  },
+  image: {
+    width: '80%',
+    height: height * 0.1,
+    resizeMode: 'contain',
+    marginBottom: theme.spacing.lg,
   },
   title: {
     fontSize: theme.fonts.size.xl,
     fontFamily: theme.fonts.bold,
-    color: '#fff',
-    marginBottom: theme.spacing.md,
+    color: theme.colors.white,
     textAlign: 'center',
+    marginBottom: theme.spacing.md,
   },
   subtitle: {
     fontSize: theme.fonts.size.sm,
-    color: '#fff',
-    marginBottom: theme.spacing.md,
+    color: theme.colors.white,
     textAlign: 'center',
-  },
-  locationContainer: {
-    marginTop: theme.spacing.xs,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    padding: theme.spacing.md,
-    borderRadius: 8,
-    width: '90%',
-    alignItems: 'center',
-  },
-  locationTitle: {
-    fontSize: theme.fonts.size.md,
-    fontFamily: theme.fonts.bold,
-    color: '#fff',
     marginBottom: theme.spacing.sm,
   },
-  locationText: {
-    fontSize: theme.fonts.size.sm,
-    color: '#fff',
-    textAlign: 'center',
-  },
   buttonContainer: {
-    position: 'absolute',  // Position the button at the bottom
-    bottom: theme.spacing.lg,
-    width: '80%', // Adjust width as necessary
+    marginTop: theme.spacing.lg,
+    width: '80%',
   },
 });
 

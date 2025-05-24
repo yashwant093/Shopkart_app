@@ -13,7 +13,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { RadioButton } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { launchImageLibrary } from 'react-native-image-picker';
-import theme from '../../../shared/theme'; // adjust if needed
+import theme from '../../../shared/theme'; // adjust path if needed
 
 const ProfileScreen: React.FC = () => {
   const [fullName, setFullName] = useState('John Doe');
@@ -65,10 +65,8 @@ const ProfileScreen: React.FC = () => {
   const handleAvatarClick = () => {
     if (!isEditing) return;
     launchImageLibrary({ mediaType: 'photo' }, (response) => {
-      if (response.didCancel) return;
       if (response.assets && response.assets.length > 0) {
-        const uri = response.assets[0].uri;
-        if (uri) setAvatarUri(uri);
+        setAvatarUri(response.assets[0].uri || null);
       }
     });
   };
@@ -76,18 +74,28 @@ const ProfileScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={styles.avatarContainer}>
-        <TouchableOpacity onPress={isEditing ? handleAvatarClick : undefined}>
-          {avatarUri ? (
-            <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
-          ) : (
-            <View style={styles.avatarIcon}>
-              <MaterialIcons name="account" size={60} color="#fff" />
-            </View>
+        <View style={styles.avatarWrapper}>
+          <TouchableOpacity onPress={handleAvatarClick}>
+            {avatarUri ? (
+              <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+            ) : (
+              <View style={styles.avatarIcon}>
+                <MaterialIcons name="account" size={60} color={theme.colors.white} />
+              </View>
+            )}
+          </TouchableOpacity>
+          {isEditing && (
+            <TouchableOpacity
+              style={styles.editIcon}
+              onPress={handleAvatarClick}
+            >
+              <MaterialIcons name="pencil" size={15} color={theme.colors.white} />
+            </TouchableOpacity>
           )}
-          <Text style={styles.uploadText}>
-            {isEditing ? 'Change Photo' : 'Profile Photo'}
-          </Text>
-        </TouchableOpacity>
+        </View>
+        <Text style={styles.uploadText}>
+          {isEditing ? 'Change Photo' : 'Profile Photo'}
+        </Text>
       </View>
 
       <View style={styles.content}>
@@ -98,6 +106,7 @@ const ProfileScreen: React.FC = () => {
           onChangeText={setFullName}
           placeholder="Enter Full Name"
           editable={isEditing}
+          placeholderTextColor={theme.colors.muted}
         />
 
         <Text style={styles.label}>Mobile Number</Text>
@@ -108,6 +117,7 @@ const ProfileScreen: React.FC = () => {
           placeholder="Enter Mobile Number"
           keyboardType="phone-pad"
           editable={isEditing}
+          placeholderTextColor={theme.colors.muted}
         />
 
         <Text style={styles.label}>Email</Text>
@@ -118,6 +128,7 @@ const ProfileScreen: React.FC = () => {
           placeholder="Enter Email"
           keyboardType="email-address"
           editable={isEditing}
+          placeholderTextColor={theme.colors.muted}
         />
 
         <Text style={styles.label}>Address</Text>
@@ -127,6 +138,7 @@ const ProfileScreen: React.FC = () => {
           onChangeText={setAddress}
           placeholder="Enter Address"
           editable={isEditing}
+          placeholderTextColor={theme.colors.muted}
         />
 
         <Text style={styles.label}>Gender</Text>
@@ -173,6 +185,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: theme.spacing.lg,
   },
+  avatarWrapper: {
+    position: 'relative',
+  },
   avatarIcon: {
     width: 100,
     height: 100,
@@ -185,12 +200,22 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
+    borderWidth: 1,
+    borderColor: theme.colors.muted,
+  },
+  editIcon: {
+    position: 'absolute',
+    right: 0,
+    bottom: 70,
+    backgroundColor: theme.colors.primary,
+    borderRadius: 50,
+    padding: 4,
   },
   uploadText: {
     marginTop: 10,
     color: theme.colors.primary,
     fontWeight: 'bold',
-    textAlign:'center'
+    textAlign: 'center',
   },
   content: {
     flex: 1,

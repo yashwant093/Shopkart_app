@@ -148,6 +148,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import theme from '../../../shared/theme';
@@ -183,72 +185,75 @@ const ForgotPassword = ({ navigation }: any) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <View style={styles.content}>
-        <Text style={styles.title}>Reset Password</Text>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={styles.content}>
+          <Text style={styles.title}>Reset Password</Text>
 
-        <Text style={styles.label}>New Password</Text>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="New Password"
-            placeholderTextColor={theme.colors.muted}
-            secureTextEntry={!showNewPassword}
-            value={newPassword}
-            onChangeText={setNewPassword}
-          />
-          <TouchableOpacity
-            onPress={() => setShowNewPassword(!showNewPassword)}
-            style={styles.iconWrapper}
-          >
-            <Ionicons
-              name={showNewPassword ? 'eye-off' : 'eye'}
-              size={20}
-              color={theme.colors.muted}
+          <Text style={styles.label}>New Password</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="New Password"
+              placeholderTextColor={theme.colors.muted}
+              secureTextEntry={!showNewPassword}
+              value={newPassword}
+              onChangeText={setNewPassword}
             />
+            <TouchableOpacity
+              onPress={() => setShowNewPassword(!showNewPassword)}
+              style={styles.iconWrapper}
+            >
+              <Ionicons
+                name={showNewPassword ? 'eye-off' : 'eye'}
+                size={20}
+                color={theme.colors.muted}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.label}>Confirm Password</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Confirm Password"
+              placeholderTextColor={theme.colors.muted}
+              secureTextEntry={!showConfirmPassword}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+            <TouchableOpacity
+              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              style={styles.iconWrapper}
+            >
+              <Ionicons
+                name={showConfirmPassword ? 'eye-off' : 'eye'}
+                size={20}
+                color={theme.colors.muted}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            style={styles.resetButton}
+            onPress={handleResetPassword}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color={theme.colors.white} />
+            ) : (
+              <Text style={styles.resetButtonText}>Reset Password</Text>
+            )}
           </TouchableOpacity>
         </View>
-
-        <Text style={styles.label}>Confirm Password</Text>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Confirm Password"
-            placeholderTextColor={theme.colors.muted}
-            secureTextEntry={!showConfirmPassword}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-          />
-          <TouchableOpacity
-            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-            style={styles.iconWrapper}
-          >
-            <Ionicons
-              name={showConfirmPassword ? 'eye-off' : 'eye'}
-              size={20}
-              color={theme.colors.muted}
-            />
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity
-          style={styles.resetButton}
-          onPress={handleResetPassword}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.resetButtonText}>Reset Password</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -303,7 +308,7 @@ const styles = StyleSheet.create({
   resetButtonText: {
     fontSize: theme.fonts.size.md,
     fontFamily: theme.fonts.medium,
-    color: '#fff',
+    color:  theme.colors.white,
   },
 });
 

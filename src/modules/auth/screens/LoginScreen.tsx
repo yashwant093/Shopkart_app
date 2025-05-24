@@ -9,13 +9,16 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
 } from 'react-native';
 import theme from '../../../shared/theme';
 import { useDispatch } from 'react-redux';
 import { useLoginMutation } from '../../../services/apiServices';
 import { setCredentials } from '../store/authSlice';
 
-const USE_STATIC_LOGIN = true; // Set to true to enable static login
+const USE_STATIC_LOGIN = true;
 
 const STATIC_EMAIL = 'admin@gmail.com';
 const STATIC_PASSWORD = '123456';
@@ -42,8 +45,6 @@ const LoginScreen = ({ navigation, setIsAuthenticated }: any) => {
     } else {
       try {
         const res = await login({ email, password }).unwrap();
-        console.log({ email, password });
-        console.log('Login response:', res);
         dispatch(setCredentials(res.access_token));
         setIsAuthenticated(true);
         Alert.alert('Success', 'Login Successful');
@@ -55,62 +56,71 @@ const LoginScreen = ({ navigation, setIsAuthenticated }: any) => {
 
   return (
     <KeyboardAvoidingView
+      style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={styles.container}
     >
-      <View style={styles.formContainer}>
-        <Text style={styles.loginText}>Log In</Text>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.container}>
+            <View style={styles.formContainer}>
+              <Text style={styles.loginText}>Log In</Text>
 
-        <View style={styles.inputWrapper}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your email"
-            placeholderTextColor={theme.colors.muted}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
-        </View>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.label}>Email</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your email"
+                  placeholderTextColor={theme.colors.muted}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  value={email}
+                  onChangeText={setEmail}
+                />
+              </View>
 
-        <View style={styles.inputWrapper}>
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your password"
-            placeholderTextColor={theme.colors.muted}
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-        </View>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.label}>Password</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your password"
+                  placeholderTextColor={theme.colors.muted}
+                  secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
+                />
+              </View>
 
-        <View style={styles.buttonWrapper}>
-          <TouchableOpacity
-            style={styles.loginButton}
-            onPress={handleLogin}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Log In</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
+              <View style={styles.buttonWrapper}>
+                <TouchableOpacity
+                  style={styles.loginButton}
+                  onPress={handleLogin}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color={theme.colors.white} />
+                  ) : (
+                    <Text style={styles.buttonText}>Log In</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
 
-      <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-        <Text style={styles.signupText}>Don't have an account? Sign Up</Text>
-      </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+              <Text style={styles.signupText}>Don't have an account? Sign Up</Text>
+            </TouchableOpacity>
 
-      <View style={styles.forgotPasswordWrapper}>
-          <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-          </TouchableOpacity>
-        </View>
-
+            <View style={styles.forgotPasswordWrapper}>
+              <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
@@ -166,7 +176,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: theme.fonts.size.md,
     fontFamily: theme.fonts.medium,
-    color: '#fff',
+    color: theme.colors.white,
   },
   signupText: {
     textAlign: 'center',
