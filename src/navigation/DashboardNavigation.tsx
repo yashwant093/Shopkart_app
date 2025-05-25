@@ -101,7 +101,7 @@
 //       component={DrawerNavigator}  // The Dashboard screen is inside the DrawerNavigator
 //       options={{
 //         headerShown: false, // Disable header for this tab screen (as it's handled in the CustomHeader)
-//         tabBarItemStyle: { width: 200 }, // Set width for Dashboard tab
+//         tabBarItemStyle: { width: 200 }, // Set width for tab
 //       }}
 //     />
 

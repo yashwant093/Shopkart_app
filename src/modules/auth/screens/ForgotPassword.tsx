@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -20,39 +19,22 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ForgotPasswordProps {
   navigation: any;
-  // removed route because mobileNo will be fetched from AsyncStorage
 }
 
 const ForgotPassword = ({ navigation }: ForgotPasswordProps) => {
-  const [mobileNo, setMobileNo] = useState<string | null>(null);
-
+  const [mobileNo, setMobileNo] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
   const [resetPassword, { isLoading }] = useResetPasswordMutation();
 
-  // Fetch mobile number from AsyncStorage on mount
-  useEffect(() => {
-    const fetchMobileNo = async () => {
-      try {
-        const storedMobile = await AsyncStorage.getItem('mobileNumber');
-        if (storedMobile) {
-          setMobileNo(storedMobile);
-        } else {
-          Alert.alert('Error', 'Mobile number not found. Please login again.', [
-            { text: 'OK', onPress: () => navigation.navigate('Login') },
-          ]);
-        }
-      } catch (error) {
-        Alert.alert('Error', 'Failed to retrieve mobile number.');
-      }
-    };
-    fetchMobileNo();
-  }, [navigation]);
-
   const handleResetPassword = async () => {
+    if (!mobileNo) {
+      Alert.alert('Error', 'Please enter your mobile number');
+      return;
+    }
+
     if (!newPassword || !confirmPassword) {
       Alert.alert('Error', 'Please fill in both password fields');
       return;
@@ -63,26 +45,39 @@ const ForgotPassword = ({ navigation }: ForgotPasswordProps) => {
       return;
     }
 
-    if (!mobileNo) {
-      Alert.alert('Error', 'Mobile number not available. Please try again.');
-      return;
-    }
-
     try {
-      const response = await resetPassword({ mobileNo, newPassword, confirmPassword }).unwrap();
+      const storedMobile = await AsyncStorage.getItem('mobileNumber');
+      console.log('Stored mobile from AsyncStorage:', storedMobile);
+      console.log('User entered mobile:', mobileNo);
+
+      if (!storedMobile) {
+        Alert.alert('Error', 'No mobile number found in storage. Please login first.');
+        return;
+      }
+
+      if (mobileNo !== storedMobile) {
+        Alert.alert('Error', 'Entered mobile number does not match our records.');
+        return;
+      }
+
+      const payload = { mobileNo, newPassword, confirmPassword };
+      console.log('Reset Password Payload:', payload);
+
+      const response = await resetPassword(payload).unwrap();
+      console.log('Reset Password Response:', response);
 
       if (response.result === 1) {
         const token = response.resultData;
-        if (token) {
-          await AsyncStorage.setItem('accessToken', token);
-        }
+        if (token) await AsyncStorage.setItem('accessToken', token);
+        
         Alert.alert('Success', response.resultMessage || 'Password reset successfully.', [
           { text: 'OK', onPress: () => navigation.navigate('Login') },
         ]);
       } else {
         Alert.alert('Error', response.resultMessage || 'Password reset failed.');
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.log('Reset Password API Error:', error);
       Alert.alert('Error', 'Something went wrong. Please try again.');
     }
   };
@@ -95,6 +90,21 @@ const ForgotPassword = ({ navigation }: ForgotPasswordProps) => {
       >
         <View style={styles.content}>
           <Text style={styles.title}>Reset Password</Text>
+
+          {/* Mobile Number Input */}
+          <Text style={styles.label}>Mobile Number</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[styles.input, { color: theme.colors.text }]}
+              value={mobileNo}
+               placeholderTextColor={theme.colors.muted}
+              onChangeText={setMobileNo}
+              placeholder="Enter your mobile number"
+              keyboardType="phone-pad"
+              autoCapitalize="none"
+              maxLength={10}
+            />
+          </View>
 
           <Text style={styles.label}>New Password</Text>
           <View style={styles.inputContainer}>

@@ -88,7 +88,7 @@ export const api = createApi({
 
     resetPassword: builder.mutation<ResetResponse, ResetRequest>({
       query: ({ mobileNo, newPassword, confirmPassword }) => ({
-        url: 'Login/ValidateUser',
+        url: 'Login/ForgotPassword',
         method: 'POST',
         body: { mobileNo, newPassword, confirmPassword },
       }),
