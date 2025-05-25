@@ -15,31 +15,33 @@ import {
 } from 'react-native';
 import theme from '../../../shared/theme';
 import { useDispatch } from 'react-redux';
-import { useLoginMutation } from '../../../services/apiServices'; // Use login mutation here
+import { useLoginMutation } from '../../../services/apiServices'; // Your RTK Query login mutation
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = ({ navigation }: any) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [login, { isLoading }] = useLoginMutation(); // Use login mutation
-  const dispatch = useDispatch();
+  const [mobileNo, setMobileNo] = useState('');
+  const [passWord, setPassWord] = useState('');
+  const [login, { isLoading }] = useLoginMutation();
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please enter your credentials');
+    if (!mobileNo || !passWord) {
+      Alert.alert('Error', 'Please enter your mobile number and password');
       return;
     }
 
     try {
-      // Call login API with entered email and password
-      const response = await login({ email, password }).unwrap();
-
-      // Assuming response contains token or user data, dispatch if needed
-      // dispatch(setCredentials(response.accessToken)); // uncomment if you have setCredentials action
-
-      Alert.alert('Success', 'Login Successful');
-      navigation.replace('Home');
+      // Call login API with mobileNo and passWord
+      const response = await login({ mobileNo, passWord }).unwrap();
+      if (response.result === 1) {
+        const token = response.resultData;
+        if (token) await AsyncStorage.setItem('accessToken', token);
+        Alert.alert('Success', response.resultMessage || 'Login Successful');
+         navigation.navigate('Dashboard');
+      } else {
+        Alert.alert('Login Failed', response.resultMessage || 'Invalid credentials');
+      }
     } catch (error) {
-      Alert.alert('Login Failed', 'Invalid credentials');
+      Alert.alert('Login Failed', 'Something went wrong. Please try again.');
     }
   };
 
@@ -59,15 +61,15 @@ const LoginScreen = ({ navigation }: any) => {
               <Text style={styles.loginText}>Log In</Text>
 
               <View style={styles.inputWrapper}>
-                <Text style={styles.label}>Email</Text>
+                <Text style={styles.label}>Mobile Number</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="Enter your email"
+                  placeholder="Enter your mobile number"
                   placeholderTextColor={theme.colors.muted}
-                  keyboardType="email-address"
+                  keyboardType="phone-pad"
                   autoCapitalize="none"
-                  value={email}
-                  onChangeText={setEmail}
+                  value={mobileNo}
+                  onChangeText={setMobileNo}
                 />
               </View>
 
@@ -78,8 +80,8 @@ const LoginScreen = ({ navigation }: any) => {
                   placeholder="Enter your password"
                   placeholderTextColor={theme.colors.muted}
                   secureTextEntry
-                  value={password}
-                  onChangeText={setPassword}
+                  value={passWord}
+                  onChangeText={setPassWord}
                 />
               </View>
 
@@ -185,3 +187,6 @@ const styles = StyleSheet.create({
 });
 
 export default LoginScreen;
+
+
+

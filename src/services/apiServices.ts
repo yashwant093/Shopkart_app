@@ -1,60 +1,20 @@
-// import { BaseQueryApi, createApi, FetchArgs, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-// import { BASE_URL } from '../constants/apiConstants';
-// // import { logout } from '../modules/auth/store/authSlice';
-
-// const baseQuery = fetchBaseQuery({
-//   baseUrl: BASE_URL,
-//   prepareHeaders: (headers, { getState, endpoint }) => {
-//     const token = (getState() as any).auth.accessToken;
-//     const publicEndpoints = ['generateOtp', 'login'];
-
-//     if (!publicEndpoints.includes(endpoint) && token) {
-//       headers.set('Authorization', `Bearer ${token}`);
-//     }
-
-//     return headers;
-//   },
-// });
-
-// const baseQueryWithReauth = async (args: string | FetchArgs, api: BaseQueryApi, extraOptions: {}) => {
-//   const result = await baseQuery(args, api, extraOptions);
-//   if (result?.error?.status === 401) {
-//     // api.dispatch(logout());
-//   }
-//   return result;
-// };
-
-// export const api = createApi({
-//   reducerPath: 'api',
-//   baseQuery: baseQueryWithReauth,
-//   endpoints: (builder) => ({
-//     login: builder.mutation({
-//       query: (credentials) => ({
-//         url: 'Auth/GenerateToken',
-//         method: 'POST',
-//         body: credentials,
-//       }),
-//     }),
-//     generateOtp: builder.mutation({
-//       query: (credentials) => ({
-//         url: 'Login/GenerateOTP',
-//         method: 'POST',
-//         body: credentials,
-//       }),
-//     }),
-//   }),
-// });
-
-// export const { useLoginMutation, useGenerateOtpMutation } = api;
-
-// services/apiServices.ts
 
 
-
-import { BaseQueryApi, createApi, FetchArgs, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+// authApi.ts
+import { createApi, fetchBaseQuery, BaseQueryApi, FetchArgs } from '@reduxjs/toolkit/query/react';
 import { BASE_URL } from '../constants/apiConstants';
 import { RootState } from '../modules/auth/store/store';
-import { GenerateOTPRequest, GenerateOTPResponse, LoginRequest, LoginResponse, TokenRequest, TokenResponse } from '../modules/auth/store/api';
+import { VerificationOtpResponse,  GenerateOTPRequest,
+  GenerateOTPResponse,
+  ResetRequest,
+  ResetResponse,
+  TokenRequest,
+  TokenResponse,
+  UserCreateRequest,
+  UserCreateResponse,
+  UserLoginRequest,
+  UserLoginResponse,
+  VerificationOtpRequest, } from '../modules/auth/store/api';
 
 const baseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
@@ -65,13 +25,17 @@ const baseQuery = fetchBaseQuery({
     }
     return headers;
   },
-})
+});
 
-const baseQueryWithReauth = async (args: string | FetchArgs, api: BaseQueryApi, extraOptions: {}) => {
+const baseQueryWithReauth = async (
+  args: string | FetchArgs,
+  api: BaseQueryApi,
+  extraOptions: {}
+) => {
   const result = await baseQuery(args, api, extraOptions);
 
   if (result?.error?.status === 401) {
-    // TODO: Implement logout or refresh logic if required
+    // TODO: Add logout or refresh logic here if needed
     // api.dispatch(logout());
   }
 
@@ -89,6 +53,7 @@ export const api = createApi({
         body: credentials,
       }),
     }),
+
     generateOTP: builder.mutation<GenerateOTPResponse, GenerateOTPRequest>({
       query: ({ mobileNo, password }) => ({
         url: 'Login/GenerateOTP',
@@ -97,15 +62,45 @@ export const api = createApi({
       }),
     }),
 
-    login: builder.mutation<LoginResponse, LoginRequest>({
-      query: ({ email, password }) => ({
-        url: '/login', // Replace with actual login endpoint
+    verifyOTP: builder.mutation<VerificationOtpResponse, VerificationOtpRequest>({
+      query: ({ verificationCode, mobileNo, passWord }) => ({
+        url: 'Login/VerifyOTP',
         method: 'POST',
-         body: { email, password },
+        body: { verificationCode, mobileNo, passWord },
       }),
     }),
 
+    userCreate: builder.mutation<UserCreateResponse, UserCreateRequest>({
+      query: ({ userName, userMobileNo, Password }) => ({
+        url: 'Login/UserCreate',
+        method: 'POST',
+        body: { userName, userMobileNo, Password },
+      }),
+    }),
+
+    login: builder.mutation<UserLoginResponse, UserLoginRequest>({
+      query: ({ mobileNo, passWord }) => ({
+        url: 'Login/ValidateUser',
+        method: 'POST',
+        body: { mobileNo, passWord },
+      }),
+    }),
+
+    resetPassword: builder.mutation<ResetResponse, ResetRequest>({
+      query: ({ mobileNo, newPassword, confirmPassword }) => ({
+        url: 'Login/ValidateUser',
+        method: 'POST',
+        body: { mobileNo, newPassword, confirmPassword },
+      }),
+    }),
   }),
 });
 
-export const { useGetTokenMutation, useGenerateOTPMutation,useLoginMutation } = api;
+export const {
+  useGetTokenMutation,
+  useGenerateOTPMutation,
+  useVerifyOTPMutation,
+  useUserCreateMutation,
+  useLoginMutation,
+  useResetPasswordMutation,
+} = api;

@@ -27,15 +27,6 @@ type Props = {
   navigation: SignupScreenNavigationProp;
 };
 
-// API response type
-interface GenerateOtpResponse {
-  result: number;
-  resultMessage: string;
-  resultFlag: boolean;
-  remark: string | null;
-  resultData: any | null;
-}
-
 const SignupScreen = ({ navigation }: Props) => {
   const dispatch = useDispatch();
   const [name, setName] = useState('');
@@ -97,7 +88,7 @@ const SignupScreen = ({ navigation }: Props) => {
 
         // Save token from response to AsyncStorage
         // Update this line if token path is different
-        const token = response.resultData?.token;
+        const token = response.resultData;
         if (token) {
           await AsyncStorage.setItem('accessToken', token);
           // Optional: You can dispatch to Redux store here if you want
